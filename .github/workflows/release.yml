@@ -90,4 +90,8 @@ jobs:
                   v_key = f"{prefix}/history/v{version}/{platform_key}/{pkg_name}.tar.gz"
                   bucket.put_object_from_file(v_key, f)
                   print(f"  OK (Backup) {name} -> https://{cdn}/{v_key}")
+                  
+                  v_txt_key = f"{prefix}/{platform_key}/{pkg_name}-version.txt"
+                  bucket.put_object(v_txt_key, f"v{version}")
+                  print(f"  OK (Version) {name} -> https://{cdn}/{v_txt_key}")
           PYEOF
