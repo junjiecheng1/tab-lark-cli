@@ -1,0 +1,77 @@
+name: goreleaser
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+env:
+  OSS_BUCKET: crafto
+  OSS_ENDPOINT: oss-cn-beijing.aliyuncs.com
+  OSS_CDN_DOMAIN: lingostatic.tweet.net.cn
+  OSS_PREFIX: tabpilot/cli-releases
+
+jobs:
+  goreleaser:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v5
+        with:
+          distribution: goreleaser
+          version: latest
+          args: release --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install Python OSS SDK
+        run: pip install oss2
+
+      - name: Upload to OSS
+        env:
+          OSS_ACCESS_KEY_ID: ${{ secrets.OSS_ACCESS_KEY_ID }}
+          OSS_ACCESS_KEY_SECRET: ${{ secrets.OSS_ACCESS_KEY_SECRET }}
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          echo "📦 上传 cli v${VERSION} 到 OSS..."
+          
+          python3 << PYEOF
+          import oss2, os, glob
+          
+          ak = os.environ.get("OSS_ACCESS_KEY_ID")
+          sk = os.environ.get("OSS_ACCESS_KEY_SECRET")
+          if not ak or not sk:
+              print("Skipping OSS upload, credentials missing.")
+              exit(0)
+              
+          bucket_name = "${{ env.OSS_BUCKET }}"
+          endpoint = "${{ env.OSS_ENDPOINT }}"
+          cdn = "${{ env.OSS_CDN_DOMAIN }}"
+          prefix = "${{ env.OSS_PREFIX }}"
+          version = "${VERSION}"
+          
+          auth = oss2.Auth(ak, sk)
+          bucket = oss2.Bucket(auth, f"https://{endpoint}", bucket_name)
+          
+          # Collect dist files (tar.gz and zip)
+          files = glob.glob("dist/*.tar.gz") + glob.glob("dist/*.zip") + glob.glob("dist/checksums.txt")
+          
+          for f in files:
+              name = os.path.basename(f)
+              key = f"{prefix}/v{version}/{name}"
+              bucket.put_object_from_file(key, f)
+              url = f"https://{cdn}/{key}"
+              print(f"  OK {name} -> {url}")
+              
+          # Also upload a generic 'latest' metadata or alias if needed
+          PYEOF
