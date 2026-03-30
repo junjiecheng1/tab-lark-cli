@@ -79,7 +79,13 @@ func (f *Factory) resolveDefaultAs() string {
 // autoDetectIdentity checks the login state and returns user if logged in, bot otherwise.
 func (f *Factory) autoDetectIdentity() core.Identity {
 	cfg, err := f.Config()
-	if err != nil || cfg.UserOpenId == "" {
+	if err != nil {
+		return core.AsBot
+	}
+	if os.Getenv("LARKSUITE_CLI_TOKEN") != "" {
+		return core.AsUser
+	}
+	if cfg.UserOpenId == "" {
 		return core.AsBot
 	}
 	stored := auth.GetStoredToken(cfg.AppID, cfg.UserOpenId)

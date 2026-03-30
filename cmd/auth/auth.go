@@ -31,6 +31,7 @@ func NewCmdAuth(f *cmdutil.Factory) *cobra.Command {
 	cmd.AddCommand(NewCmdAuthScopes(f, nil))
 	cmd.AddCommand(NewCmdAuthList(f, nil))
 	cmd.AddCommand(NewCmdAuthCheck(f, nil))
+	cmd.AddCommand(NewCmdAuthSeed(f, nil))
 	return cmd
 }
 

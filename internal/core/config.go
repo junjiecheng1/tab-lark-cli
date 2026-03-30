@@ -106,6 +106,22 @@ func SaveMultiAppConfig(config *MultiAppConfig) error {
 
 // RequireConfig loads the single-app config. Takes Apps[0] directly.
 func RequireConfig(kc keychain.KeychainAccess) (*CliConfig, error) {
+	// First check environment variables
+	if appId := os.Getenv("LARKSUITE_CLI_APP_ID"); appId != "" {
+		brand := os.Getenv("LARKSUITE_CLI_BRAND")
+		if brand == "" {
+			brand = "feishu"
+		}
+		return &CliConfig{
+			AppID:      appId,
+			AppSecret:  os.Getenv("LARKSUITE_CLI_APP_SECRET"),
+			Brand:      LarkBrand(brand),
+			DefaultAs:  os.Getenv("LARKSUITE_CLI_DEFAULT_AS"),
+			UserOpenId: os.Getenv("LARKSUITE_CLI_USER_OPEN_ID"),
+			UserName:   os.Getenv("LARKSUITE_CLI_USER_NAME"),
+		}, nil
+	}
+
 	raw, err := LoadMultiAppConfig()
 	if err != nil || raw == nil || len(raw.Apps) == 0 {
 		return nil, &ConfigError{Code: 2, Type: "config", Message: "not configured", Hint: "run `lark-cli config init --new` in the background. It blocks and outputs a verification URL — retrieve the URL and open it in a browser to complete setup."}
@@ -134,7 +150,7 @@ func RequireAuth(kc keychain.KeychainAccess) (*CliConfig, error) {
 	if err != nil {
 		return nil, err
 	}
-	if cfg.UserOpenId == "" {
+	if cfg.UserOpenId == "" && os.Getenv("LARKSUITE_CLI_TOKEN") == "" {
 		return nil, &ConfigError{Code: 3, Type: "auth", Message: "not logged in", Hint: "run `lark-cli auth login` in the background. It blocks and outputs a verification URL — retrieve the URL and open it in a browser to complete login."}
 	}
 	return cfg, nil
