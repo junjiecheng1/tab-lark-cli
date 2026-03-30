@@ -57,21 +57,38 @@ jobs:
           bucket_name = "${{ env.OSS_BUCKET }}"
           endpoint = "${{ env.OSS_ENDPOINT }}"
           cdn = "${{ env.OSS_CDN_DOMAIN }}"
-          prefix = "${{ env.OSS_PREFIX }}"
+          prefix = "tools/tabpilot-tools"
           version = "${VERSION}"
           
           auth = oss2.Auth(ak, sk)
           bucket = oss2.Bucket(auth, f"https://{endpoint}", bucket_name)
           
-          # Collect dist files (tar.gz and zip)
-          files = glob.glob("dist/*.tar.gz") + glob.glob("dist/*.zip") + glob.glob("dist/checksums.txt")
+          # Map goreleaser terms to Pilot platform terms
+          arch_map = {"amd64": "x64", "arm64": "arm64"}
+          os_map = {"darwin": "darwin", "linux": "linux", "windows": "win"}
           
+          files = glob.glob("dist/*.tar.gz")
           for f in files:
               name = os.path.basename(f)
-              key = f"{prefix}/v{version}/{name}"
-              bucket.put_object_from_file(key, f)
-              url = f"https://{cdn}/{key}"
-              print(f"  OK {name} -> {url}")
-              
-          # Also upload a generic 'latest' metadata or alias if needed
+              # e.g., lark-cli-1.0.2-darwin-amd64.tar.gz
+              parts = name.replace(".tar.gz", "").split("-")
+              if len(parts) >= 4:
+                  # Handle name structure: lark-cli-1.0.2-darwin-amd64
+                  # The last two are OS and Arch
+                  file_os = parts[-2]
+                  file_arch = parts[-1]
+                  pkg_name = "-".join(parts[:-3]) # "lark-cli"
+                  
+                  p_os = os_map.get(file_os, file_os)
+                  p_arch = arch_map.get(file_arch, file_arch)
+                  
+                  platform_key = f"{p_os}-{p_arch}"
+                  key = f"{prefix}/{platform_key}/{pkg_name}.tar.gz"
+                  bucket.put_object_from_file(key, f)
+                  print(f"  OK {name} -> https://{cdn}/{key}")
+                  
+                  # Versioned backup (optional)
+                  v_key = f"{prefix}/history/v{version}/{platform_key}/{pkg_name}.tar.gz"
+                  bucket.put_object_from_file(v_key, f)
+                  print(f"  OK (Backup) {name} -> https://{cdn}/{v_key}")
           PYEOF
