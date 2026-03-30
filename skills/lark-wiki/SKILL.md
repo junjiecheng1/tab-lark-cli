@@ -6,6 +6,7 @@ metadata:
   requires:
     bins: ["lark-cli"]
   cliHelp: "lark-cli wiki --help"
+category: feishu_cli
 ---
 
 # wiki (v2)

@@ -6,6 +6,7 @@ metadata:
   requires:
     bins: ["lark-cli"]
   cliHelp: "lark-cli event --help"
+category: feishu_cli
 ---
 
 # event (v1)

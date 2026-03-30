@@ -6,6 +6,7 @@ compatibility: Requires Node.js 18+
 metadata:
   requires:
     bins: ["lark-cli"]
+category: feishu_cli
 ---
 
 # Whiteboard Cli Skill

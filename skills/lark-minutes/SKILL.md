@@ -6,6 +6,7 @@ metadata:
   requires:
     bins: ["lark-cli"]
   cliHelp: "lark-cli minutes --help"
+category: feishu_cli
 ---
 
 # minutes (v1)

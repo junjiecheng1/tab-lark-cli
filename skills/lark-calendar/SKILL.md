@@ -6,6 +6,7 @@ metadata:
   requires:
     bins: ["lark-cli"]
   cliHelp: "lark-cli calendar --help"
+category: feishu_cli
 ---
 
 # calendar (v4)

@@ -6,6 +6,7 @@ metadata:
   requires:
     bins: ["lark-cli"]
   cliHelp: "lark-cli mail --help"
+category: feishu_cli
 ---
 
 # mail (v1)

@@ -6,6 +6,7 @@ metadata:
   requires:
     bins: ["lark-cli"]
   cliHelp: "lark-cli vc --help"
+category: feishu_cli
 ---
 
 # vc (v1)

@@ -6,6 +6,7 @@ metadata:
   requires:
     bins: ["lark-cli"]
   cliHelp: "lark-cli task --help"
+category: feishu_cli
 ---
 
 # task (v2)

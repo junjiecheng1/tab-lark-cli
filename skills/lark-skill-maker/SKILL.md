@@ -5,6 +5,7 @@ description: "创建 lark-cli 的自定义 Skill。当用户需要把飞书 API 
 metadata:
   requires:
     bins: ["lark-cli"]
+category: feishu_cli
 ---
 
 # Skill Maker

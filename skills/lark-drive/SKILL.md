@@ -6,6 +6,7 @@ metadata:
   requires:
     bins: ["lark-cli"]
   cliHelp: "lark-cli drive --help"
+category: feishu_cli
 ---
 
 # drive (v1)
